@@ -1452,3 +1452,62 @@ distinctions are shown directly; for non-PMs they are translated into plain
 confidence cues ("I'm fairly sure" / "I'm guessing — worth checking").* This
 makes the Executive understandable, correctable, and trustworthy rather than a
 persona presenting conclusions with uniform certainty.
+
+---
+
+## H. Implementation Considerations
+
+*These notes apply the concept to PMO Pro. They are based on PMO Pro's existing
+documentation and schema and should be confirmed against the code before work
+begins.*
+
+### The timeline is the plan
+
+In PMO Pro, timeline items are the tasks and milestones that achieve an outcome.
+The timeline is therefore the plan itself, and plan-building should be centred on
+it. The roles are:
+
+- **Completion conditions** (§6a) — the outcomes.
+- **Timeline** — the tasks and milestones that achieve them.
+- **Action items, decisions, and risks** (mostly from meetings) — follow-ups,
+  choices, and threats, attached to timeline items through `timeline_link`.
+
+The planning conversation (§10b) builds the timeline; everything else hangs off
+it as it does today.
+
+### What the timeline would need
+
+- **A link to the outcome.** Each task or milestone points to the completion
+  condition it serves. This is what lets the Executive answer "what's left for
+  this outcome?" and "is this still needed?" (§16).
+- **An owner.** The `timeline` table has no owner column, so "missing owner" gaps
+  cannot be detected without one. Ideally it links to an account rather than
+  free text.
+- **Dependencies.** A predecessor link between timeline items. Without it,
+  "missing input" gaps and any forecast ("this slips, so that slips") are not
+  possible.
+- **A defined `type`.** It is free text today. The system needs at least "task"
+  and "milestone" to tell work from checkpoints.
+- **Provenance.** Which planning session or proposal created the item, for undo
+  and audit (§10a).
+- **Possibly a description or acceptance note** on tasks, so "done" can be
+  checked at task level too.
+
+### How the gap types map
+
+| Gap (§6b) | Where it shows up |
+|---|---|
+| Missing work | A condition with no tasks |
+| Missing owner | A task with no owner |
+| Missing input | A task whose dependency isn't planned |
+| Missing decision | A task blocked on a pending decision |
+| Missing approval | No approval milestone before the condition |
+| Missing information | Usually handled in the planning conversation as a question, or recorded as a task |
+
+### Effect on the implementation
+
+Write-back proposals (§10a) become mainly: create tasks or milestones, set owner
+and dates, link them to a condition, and add dependencies. All of this lives in
+the timeline domain, which already has its own service and is not tied to the
+meeting pipeline. Action items stay with meetings, which removes the open
+question of whether they can be created from the planning conversation.
