@@ -2,7 +2,76 @@
 ## A State-Driven, OODA-Based Architecture for Project Management
 
 **Concept document for further review**
-**Revised:** September 10, 2026
+**Revised:** November 4, 2026
+
+---
+
+## Summary in Plain Language
+
+**The problem.** Most project tools only record what people type in: tasks,
+dates, owners. Working out what it all *means* and what to do next is left to a
+person. Many people running projects aren't trained project managers, so that
+work often doesn't get done.
+
+**The idea.** An AI that acts like an experienced project manager on the team.
+Instead of waiting to be asked, it keeps track of the project and works out what
+needs attention.
+
+**How it thinks.** It starts with one question: *what does it take to finish this
+project, and what's still missing?*
+
+1. **Agree on what "done" means.** The AI suggests a short list of outcomes, such
+   as "customers can use the new feature in production". It draws on the
+   project's goals, what was said in meetings, and what similar projects usually
+   need. The owner confirms or adjusts the list. It isn't fixed and gets updated
+   when plans change.
+2. **Find the gaps.** For each outcome, it checks what's needed and whether that
+   exists yet: work nobody has planned, decisions nobody has made, questions
+   nobody has asked, tasks with no owner, approvals nobody has scheduled. A risk
+   is just an outcome that might not happen.
+3. **Focus on what matters now.** Early on almost everything is a gap, so it
+   ranks them by urgency and saves the rest for later instead of listing
+   everything.
+4. **Check what's still true.** It also watches for things the project is
+   counting on that have stopped being true, like a vendor running late or a
+   person being reassigned.
+
+**How it stays ahead without being noisy.** Deadlines, expectations and
+assumptions all have dates attached. The AI rechecks them on a schedule, so it
+notices problems coming even when nothing has happened yet. Most checks are
+simple and cheap; the AI only does deeper thinking when something actually
+looks off. It speaks up when it matters and stays quiet otherwise.
+
+**How it stays trustworthy.**
+- It keeps a clear record of what it believes and why. It only changes its mind
+  when there's new evidence, and it says what changed.
+- If the team says "on track" and the AI disagrees, it shows the disagreement
+  and the evidence rather than quietly overriding anyone.
+- It never changes project records on its own. It *proposes* changes ("add these
+  six items to the plan"), the person reviews and approves them, and the system
+  makes the change in a way that can be undone. It starts with only adding new
+  items and earns more freedom over time.
+
+**How people use it.** Mostly through a planning conversation. You chat with the
+AI, and a panel beside the chat shows the draft list of outcomes and plan items
+as they take shape. You can edit the list directly or just talk.
+
+**Who it's for.**
+- **Experienced project managers:** it does the constant tracking and shows its
+  reasoning so they can check it.
+- **Everyone else:** it supplies the project-management know-how they don't
+  have, in plain language, with clear recommendations instead of lists of
+  options.
+
+**How you'd know it's working.** It notices changes quickly, and gaps get closed
+*before* they hold the project up.
+
+**What's set aside for later.** Coordinating across many projects, specialised
+AI models, and having the AI retrain itself.
+
+> **In one line:** the AI Project Executive keeps asking "what will it take to
+> finish, and what's missing?", and helps you close those gaps before they
+> become problems.
 
 ---
 
@@ -32,8 +101,9 @@ A guiding principle throughout:
 > **The sophistication belongs inside the system. The surface a user sees
 > should match how much project-management expertise that user actually has.**
 
-Sections 1–20 describe the shared architecture. **Sections A and B** then
-describe how the product should behave differently for each audience.
+Sections 1–18 describe the shared architecture; longer-range extensions are
+collected under **Future Directions**. **Sections A and B** then describe how the
+product should behave differently for each audience.
 
 ---
 
@@ -55,6 +125,7 @@ needs attention. It uses an ongoing **OODA loop — Observe, Orient, Decide, Act
 entered both reactively (when the world changes) and, primarily, proactively (on
 its own initiative, looking ahead), to assess:
 
+- What does finishing require that we don't yet have?
 - What changed?
 - What was completed?
 - What was expected but did not happen?
@@ -64,6 +135,11 @@ its own initiative, looking ahead), to assess:
 - What should be stopped or deferred?
 - What decisions require human judgment or authority?
 - What should simply be watched?
+
+The first question is the anchor. The Executive's orientation is measured as
+**distance to done, expressed as gaps** (§6a–§6b): what completing the project
+requires, and what is still missing. Guarding against risk is one case of that
+question, not its core.
 
 The resulting product is less a conventional project-management application with
 an AI assistant and more a **Project Operating System with an AI Executive**.
@@ -221,40 +297,54 @@ only a small, relevant subset into any individual reasoning cycle.
 
 ## 5. OODA as the Project Management Control Loop
 
-The Project Executive operates using an ongoing OODA model. Critically, the loop
-is entered from **two directions**: reactively, when the world changes; and
-proactively, when the Executive's own forward reasoning identifies something that
-warrants orientation even though nothing has "happened."
+The Project Executive operates using an ongoing OODA model.
+
+OODA is often described as a competitive loop — out-cycling an adversary — but
+its core, in Boyd's own framing, is **re-orientation**: keeping one's
+understanding matched to a changing environment. No adversary is required. A
+project drifting from its plan, a scope that shifts, a dependency that quietly
+goes stale — these are exactly the changing environment OODA is built for. The
+measure of the loop is therefore not raw speed but **how quickly the Executive's
+understanding catches up with reality** (see Candidate Metrics, §F).
+
+The loop is entered from two directions: when the world changes, and when the
+Executive's own forward view — its completion conditions, gaps, and expectations
+— says something needs attention even though nothing has "happened." Section 6
+explains why these are really one mechanism.
 
 ```text
-     PROJECT STATE / WORLD                GOALS / PLAN / FORECAST
-   (reactive: something changed)      (proactive: looking ahead on
-              |                          the Executive's own initiative)
-              |                                    |
-              +---------------------+--------------+
-                                    |
-                                    v
-                                 OBSERVE
-                       (changes AND anticipated futures)
-                                    |
-                                    v
-                                  ORIENT
-                                    |
-                                    v
-                                  DECIDE
-                                    |
-               +----+----+---------+----------+---------+
-               |         |         |          |         |
-               v         v         v          v         v
-              ACT      WATCH     HUMAN      INITIATE   INVESTIGATE
-                                 DECISION   (start     (go obtain
-               |         |         |         work)     missing info)
-               +---------+---------+----------+---------+
-                                    |
-                                    v
-                              PROJECT STATE
-                                    |
-                                    +------> repeat (and keep looking ahead)
+   PROJECT STATE / WORLD              COMPLETION CONDITIONS, GAPS,
+   (something changed)                EXPECTATIONS (re-checked on schedule)
+             |                                      |
+             +------------------+-------------------+
+                                |
+                                v
+                             OBSERVE  <---------------------------------+
+                  (changes AND anticipated futures)                     |
+                                |                                       |
+                                v                                       |
+                             ORIENT                                     |
+           (1. what does finishing require that is missing?             |
+            2. what are we counting on that is no longer true?)         |
+                                |                                       |
+                                v                                       |
+                             DECIDE                                     |
+                                |                                       |
+      +----------+----------+---+------+-----------+                    |
+      |          |          |          |           |                    |
+      v          v          v          v           v                    |
+     ACT       WATCH      HUMAN     INITIATE   INVESTIGATE              |
+             (expect-    DECISION   (close a   (obtain                  |
+              ation)                 gap)      missing info)            |
+      |          |          |          |           |                    |
+      +----------+----------+----+-----+-----------+                    |
+                                 |                                      |
+                                 v                                      |
+                  PROJECT STATE + NEW EXPECTATIONS                      |
+                                 |                                      |
+                                 +---- outcomes observed (feedback) ----+
+
+   Routine cases take a shortcut:  ORIENT --(learned policy)--> ACT
 ```
 
 ### Observe
@@ -267,11 +357,21 @@ assumptions aging past their validation horizon, and risks trending toward
 realization — none of which require an external event.
 
 ### Orient
-Interpret the observation relative to project goals; current plan; dependencies;
-assumptions; constraints; resources; commitments; historical experience;
-organizational policy; and human authority. Orientation asks not only "what does
-this change mean?" but "given where the project is heading, what is forming that
-we should get ahead of?"
+Orientation asks two questions, in order:
+
+1. **What does finishing require, and what is missing?** Measured against the
+   project's completion conditions (§6a), orientation identifies gaps — missing
+   work, decisions, information, owners, inputs, approvals (§6b). This is the
+   primary question, and it drives the Executive's agenda.
+2. **What are we counting on that is no longer true?** Observations are checked
+   against current beliefs, expectations, and completion conditions; a mismatch
+   is a signal to re-orient (§7a).
+
+Both are interpreted relative to the current plan, dependencies, assumptions,
+constraints, resources, commitments, historical experience, organizational
+policy, and human authority. Guarding against risk is part of the first
+question, not a separate one: a risk is a completion condition that might not
+be met.
 
 ### Decide
 Determine what deserves attention. A decision may be to act; delegate;
@@ -285,68 +385,150 @@ bounded agent or specialist system. Action includes proactive moves — starting
 preparatory work, requesting an estimate before it is overdue, or validating an
 assumption before it fails — not only responses to things that already broke.
 
+### Two features carried over from Boyd
+
+- **Implicit guidance — Orient straight to Act.** A well-oriented actor handles
+  routine situations directly, without full deliberation. Here, situations that
+  match learned policy (§18 — Context → Memory → Policy) go straight to action,
+  and the full Decide step is reserved for novel or consequential cases. This is
+  also how the loop stays affordable.
+- **Feedback.** The outcomes of Decide and Act are themselves observations. The
+  Executive learns whether its own interventions worked, not only whether the
+  project did.
+
 ---
 
-## 6. A Dual-Drive Control Model: Proactive First, Event-Aware Second
+## 6. Proactivity as One Mechanism: Future-Dated Objects, Re-checked
 
 A purely event-driven system is fundamentally **reactive** — something must
-happen in the world (a task completes, an email arrives, a deadline nears)
-before the Executive thinks. That is necessary but insufficient. A real project
-executive does not wait to be poked. It **looks ahead**, **goes looking for
-problems before they surface**, **initiates work and inquiry on its own
-authority**, and **anticipates what should happen next**. Foresight — not
-reaction — is the defining behavior of management.
+happen in the world before the Executive thinks. A real project executive does
+not wait to be poked. It **looks ahead**, **goes looking for problems before
+they surface**, **initiates work and inquiry on its own authority**, and
+**anticipates what should happen next**. Foresight — not reaction — is the
+defining behavior of management.
 
-The Project Executive is therefore driven by **two forces**, with the proactive
-force primary:
+It is tempting to describe this as two separate drives: a proactive, goal-driven
+one and a reactive, event-driven one. In practice they are **one mechanism**.
+Proactivity does not need a separate "think ahead" engine; it comes from *what
+the Executive stores*:
 
-**1. Proactive / goal-driven (primary).** On its own initiative, continuously
-and without any triggering event, the Executive reasons *forward* from goals,
-plans, dependencies, and expectations:
+- **completion conditions** (§6a) and the **gaps** against them (§6b);
+- **expectations** — what should happen, by when, including watches (§7);
+- **assumptions** with a re-validation date;
+- **milestones, dependencies, and resource windows** with dates attached.
 
-- What is coming that the project is not yet ready for?
-- Which dependencies, resource windows, or milestones are approaching, and is
-  the upstream work positioned to meet them?
-- Which assumptions have gone stale and should be re-validated *before* they
-  fail?
-- Where is risk *forming* — not yet realized, but trending toward realization?
-- What work should start *now* to prevent a future problem or preserve a future
-  option?
-- What has quietly stopped mattering and should be reconsidered?
-- What information is missing that the Executive should go and obtain rather than
-  wait to receive?
+Every one of these is a **future-dated object**. Re-checking them on a schedule
+is what "reasoning forward" means in practice: an expectation nearing its date,
+an assumption reaching its re-check date, a gap that will soon block a
+condition, a milestone whose upstream work is not positioned. None requires an
+external event — each surfaces because the object itself says *now is the time
+to look*.
 
-None of these require an event. They arise from the Executive's own
-forward-looking agenda: a continuous scan of the project's *future* state
-against its goals.
+**Events** — task completed, email received, document changed, meeting
+concluded, decision recorded, an expected event that did *not* occur, or a
+periodic heartbeat — remain valuable. But an event does **not** prescribe an
+action, and the absence of events does **not** imply the absence of management.
+An event simply **accelerates** a re-check the schedule would have reached
+anyway.
 
-**2. Reactive / event-aware (secondary).** Events remain valuable inputs. The
-underlying software can and should be event-driven at the infrastructure level:
-task completed, task overdue, email received, document changed, meeting
-concluded, decision recorded, new issue raised, agent completed work, budget
-changed, deadline approaching, dependency changed, an expected event that did
-*not* occur, or a periodic heartbeat.
+> **The Executive maintains future-dated completion conditions, gaps, and
+> expectations, and re-checks them continuously. Events accelerate that
+> re-checking; they are not the only reason the Executive thinks.**
 
-But an event does **not** prescribe an action, and — more importantly — the
-absence of events does **not** imply the absence of management. An event is an
-*additional* signal that may **accelerate** a re-orientation the Executive would
-have reached on its own; it is not the sole trigger for thought.
+### Triage before reasoning
 
-> **The Executive continuously reasons forward from goals and anticipates what
-> needs attention. Events are additional signals that may accelerate that
-> reasoning — not the only reason the Executive thinks.**
+Continuous LLM reasoning over every project is neither affordable nor necessary.
+Most cycles should be **deterministic**: date arithmetic, threshold tests,
+expectation status, gap-ranking rules. The model is called for orientation only
+when one of those checks produces a signal that needs interpretation. Cheap
+checks decide *where* to think; the model decides *what it means*.
 
-**Proactive does not mean constantly acting.** The discipline described
-elsewhere in this document — no-op, defer, watch, and stop are valid decisions;
-do not interrupt humans needlessly — still holds. Proactivity governs *attention
-and anticipation*, not *action volume*. The Executive is always thinking ahead
-and hunting for what matters; it still exercises judgment about whether to act,
-watch, or wait. Constant foresight, selective action.
+**Proactive does not mean constantly acting.** No-op, defer, watch, and stop are
+valid decisions; do not interrupt humans needlessly. Proactivity governs
+*attention and anticipation*, not *action volume*. Constant foresight, selective
+action.
 
-This dual-drive model is what separates an *Executive* from an *automation*. An
-automation waits for a trigger and fires a rule. An Executive maintains a
-forward view of the project and acts on its own reading of what the project
-will need — using events to sharpen, not to summon, its attention.
+This is what separates an *Executive* from an *automation*. An automation waits
+for a trigger and fires a rule. An Executive maintains a forward view of what
+the project needs in order to finish, and acts on its own reading of it — using
+events to sharpen, not to summon, its attention.
+
+---
+
+## 6a. Completion Conditions — Defining "Done"
+
+The Executive's orientation starts from an explicit definition of **done**: a
+small set of **completion conditions**. Each is phrased as a *checkable outcome*,
+not a task — "customers can request instant payouts in production," not "build
+payouts" — and each states *how we would know it is true*.
+
+**Elicitation: suggest first, ask where needed.** People react to a list far more
+easily than they produce one. The Executive therefore *suggests* conditions,
+each showing its source:
+
+- the project's objectives, scope, and success criteria;
+- what was said in meetings and documents ("the customer needs a demo," "Legal
+  must sign off");
+- general knowledge of what this kind of project usually requires (a launch
+  usually needs testing, training, and a rollback plan).
+
+It then *asks* a few sharpening questions — only where nothing can be inferred,
+or where the project-specific answer matters most ("Who has to approve this
+before it's done?"). To avoid rubber-stamping, suggestions are kept few and
+specific to this project; for the most consequential ones, the Executive asks a
+sharpening question rather than offering a plain "accept."
+
+**Progressive breakdown.** Top-level conditions are set up front. Each one is
+broken down only when it becomes relevant — it is approaching in time, or
+someone asks — using the same suggest-and-ask pattern at each level ("What does
+'training complete' mean here?"). The Executive goes only as deep as the next
+decision or the next piece of work someone could start.
+
+**A living definition.** Completion conditions are beliefs, not fixed
+requirements. Signals of scope change — a dropped requirement, a new stakeholder,
+a passed milestone — prompt the Executive to revisit what done includes. A change
+in "done" is itself a signal: it retires work that served a removed condition
+(§16) and triggers fresh gap analysis.
+
+---
+
+## 6b. Gap Analysis — Orientation as Distance to Done
+
+For each completion condition, the Executive works out what it requires and
+compares that with what exists. Whatever is required but absent is a **gap**:
+
+- **Missing work** — a requirement with no task behind it.
+- **Missing decision** — work blocked on a choice nobody has made.
+- **Missing information** — a needed estimate, spec, or answer nobody has asked
+  for.
+- **Missing owner** — work or a decision nobody is accountable for.
+- **Missing input** — a dependency nobody has planned to supply.
+- **Missing approval** — an authority step nobody has scheduled.
+- **Missing criteria** — something marked done with no definition of done.
+
+**A risk is a completion condition that might not be met.** Guarding against
+risk is therefore part of gap analysis, not a separate discipline.
+
+**Missing work versus missing data.** "I don't see a test plan" may mean testing
+has not been planned — or that it has been and was never recorded. The Executive
+resolves this by *asking in plain language* ("Is testing planned somewhere?").
+The answer either fills in the graph or confirms a real gap.
+
+**Ranking.** Early in a project nearly everything is a gap; showing all of them
+is just a to-do list nobody reads. Gaps are ranked by how soon they block a
+condition, how much depends on them, and whether anyone could act on them today.
+"Nobody has planned cutover" does not matter in week 1 but is urgent in week 10.
+A gap that does not matter yet is watched — it becomes an expectation (§7) —
+rather than surfaced.
+
+**Dismissed gaps.** An owner may say a gap is not needed. The dismissal is
+recorded with a date to raise it again, not forgotten. This respects the owner's
+authority while still protecting non-PMs from their own blind spots.
+
+**The second question: mismatch.** Once "what's missing?" is answered,
+orientation asks "is anything we're counting on no longer true?" — whether
+observations contradict current beliefs, expectations, or completion conditions
+(§7a).
 
 ---
 
@@ -388,6 +570,41 @@ Every significant action creates an expected future state, and every expected
 future state becomes something the Executive actively watches toward — the
 mechanism by which a proactive Executive keeps its attention pointed at what is
 coming, not only at what has occurred.
+
+**Watch and Expect are the same object.** A "watch" is simply an expectation with
+a trigger: *vendor delivers by Friday; if not, reopen the vendor decision.* Every
+Decide outcome other than "act now" — watch, defer, ask a human, investigate —
+leaves an expectation behind for a later cycle to check. This keeps the
+Executive's entire forward view in one kind of object.
+
+---
+
+## 7a. Explicit, Stable Orientation
+
+The situation model is made concrete as a set of **beliefs** — "launch is
+achievable," "the vendor is reliable," "Susan is available through the 22nd" —
+each with a confidence level, its evidence, and a last-checked date. Completion
+conditions (§6a) are beliefs too. Re-orientation means changing beliefs, with the
+change recorded.
+
+**Stability.** An Executive that re-orients continuously with a language model
+can flip-flop — the same state judged "at risk" on Tuesday and "fine" on
+Wednesday with nothing changed. For a user that is worse than silence. Beliefs
+therefore change only on new evidence, and every change carries a reason: *"I was
+confident in the Oct 15 date; I'm less so because the vendor spec slipped."* That
+record of changes is also the most natural explanation to show a non-PM — more
+useful than a reasoning trail.
+
+**Team orientation as a signal.** People hold their own beliefs about the
+project. When the team's view ("on track") and the Executive's beliefs disagree,
+the Executive shows the disagreement and its evidence rather than silently
+overriding it: *"The team's last update says on track; here's why I'm less
+sure."* The gap between orientations is often the most valuable signal there is.
+
+**Breaking down and rebuilding.** Boyd's "destruction and creation": periodically,
+and at milestones, the Executive deliberately questions the goal and the
+definition of done — is this still the right outcome, is this work still worth
+doing — rather than only tracking against them.
 
 ---
 
@@ -457,6 +674,81 @@ period. It may then decide to obtain a revised vendor estimate, identify
 alternate coverage, set a 24-hour watch, and **avoid interrupting a human until
 a meaningful threshold is crossed.** This is active management rather than
 tracking.
+
+In the completion-oriented framing (§6a–§6b), most new work comes from **closing
+gaps**: a condition that needs work nobody has planned, a decision nobody has
+made, information nobody has asked for. The Executive does not write that work
+into the project directly. It proposes it (§10a), usually through the planning
+conversation (§10b).
+
+---
+
+## 10a. Writing Back — Proposals, Not Writes
+
+The Executive never writes project records directly. It produces **typed
+proposals** drawn from a small, fixed set of actions; deterministic code checks
+each proposal, and the system's ordinary write path applies it.
+
+- **Additive first.** The initial set is create-only: milestones, action items
+  (with owner and due date), pending decisions, and links between items and
+  milestones or completion conditions. Changes to existing records come later,
+  behind a before-and-after preview. Deletes come last, if at all.
+- **Batch confirmation.** Planning proposals collect in a draft and are confirmed
+  as a set — *"Add these 6 items to the plan"* — because plan items make sense
+  together. Per-item approval remains for one-offs.
+- **Checked on approval, not on generation.** IDs, access, field values, and
+  *staleness* — has the underlying state changed since the proposal was made? —
+  are checked when the user approves. Stale proposals are regenerated, not
+  applied.
+- **Provenance and undo.** Every write records the approving person and the
+  proposal it came from, so a batch can be listed and reversed.
+- **Links to "done."** Every created item is linked to the completion condition
+  it serves. These requirement-to-work links are exactly the graph structure
+  §14a notes is missing from today's data. **Building the plan builds the
+  graph.**
+- **Guardrails.** Check proposals against existing items for duplicates; limit
+  how many items a single proposal can contain; prefer the next actionable layer
+  over a full breakdown; and use real accounts for owners where possible, so
+  "who owns this" is not guesswork.
+- **A trust ladder.** Write capability widens with track record: additive with
+  batch approval first, then updates with preview, and only much later any
+  autonomous writes, for proven kinds of action.
+
+There are two kinds of write, with different levels of caution. **Graph writes**
+— links, confidence, confirmations — record the system's own beliefs; a wrong one
+skews later reasoning but changes nobody's records, so these can be lighter-touch.
+**Project-record writes** — action items, dates, owners, decisions — belong to
+people and always require approval.
+
+One remaining risk: a one-click "yes" from a non-PM can become rubber-stamping.
+A typed preview keeps the change visible, but for consequential changes it may be
+worth slowing that click down on purpose.
+
+---
+
+## 10b. The Planning Conversation — Interaction Model
+
+Defining done and building the plan happen in a **dedicated chat persona** within
+the product, separate from the question-and-answer personas. It is a guided
+conversation with a goal and a structured result.
+
+- **A conversation plus a live draft.** The chat is the dialogue. A panel beside
+  it shows the draft completion conditions and proposed plan items, updated
+  through the model's tool calls — never by parsing its prose. The user can edit
+  the panel directly or by talking. Without the panel, users end up typing data
+  entry into a chat box.
+- **A structured flow, carried by the prompt:** gather context, suggest, ask one
+  or two sharpening questions per turn, confirm. Never a form.
+- **A prompt variant per audience.** The non-PM variant leads with suggestions in
+  plain language; the PM variant allows direct authoring and challenge in PM
+  terms. Same tools, same draft, different prompt (Sections A and B).
+- **A persistent session** per project for this persona, so revisiting "done"
+  picks up what was agreed and why.
+- **System-started re-entry.** When signals suggest scope has changed, the
+  product invites the user back into this conversation with context already
+  loaded — *"A meeting last week dropped the export requirement; want to revisit
+  what done includes?"* — keeping the user in control while still being
+  proactive.
 
 ---
 
@@ -611,6 +903,23 @@ This inference-over-entry approach is not merely a convenience. It is:
    project graph from how you already work, so you get the reasoning without the
    data-entry burden" is a categorically stronger and harder-to-copy proposition.
 
+### Top-down derivation: the goal implies structure
+
+Inference from ambient communication works *bottom-up*, from records toward
+structure. It has a natural complement that works *top-down*: start from the
+project's completion conditions (§6a), derive the structure they *require* — the
+work, decisions, inputs, owners, and approvals each condition depends on — and
+check that expected structure against what the records show. Where they match,
+the graph gains a confirmed edge; where something is required but absent, the
+result is a gap (§6b); where the records are simply silent, the Executive asks.
+
+This makes **planning and graph construction the same activity.** Each time the
+planning conversation (§10b) proposes work for a condition and a person accepts
+it, a requirement-to-work edge is created (§10a) — precisely the structure this
+section notes is missing from today's data. The planning conversation is
+therefore a primary surface for building the graph, alongside inference from
+meetings, email, and documents.
+
 ### Inference must be epistemically honest
 
 An inferred graph is only as trustworthy as the extraction that produced it, and
@@ -755,29 +1064,14 @@ If Customer X withdrew the requirement that justified a task, the Executive
 should recommend cancellation rather than continuing work merely because the
 task exists.
 
----
-
-## 17. Nested Project and Portfolio Executives
-
-The OODA model can be hierarchical: a Portfolio Executive orienting across
-multiple Project Executives. If Project A needs Sarah for another week and
-Project B depends on her for a critical milestone, neither Project Executive
-resolves the conflict alone — the Portfolio Executive orients across both and
-either allocates under delegated authority or prepares the decision for a human
-portfolio owner. This provides natural escalation across organizational levels.
+Completion conditions (§6a) make this concrete. Work created through the
+planning conversation is linked to the condition it serves (§10a); when a
+condition is removed or changed, every item linked to it becomes a candidate for
+stopping or re-scoping — a lookup, not an investigation.
 
 ---
 
-## 18. Specialist Small Language Models
-
-The Executive can orchestrate narrow-domain SLMs — Schedule, Risk, Resource,
-Requirements, Financial, and Stakeholder — rather than relying on one model for
-every cognitive task. The Executive combines their outputs and maintains
-authority over the overall orientation.
-
----
-
-## 19. Learning Across Projects
+## 17. Learning Across Projects
 
 Every significant OODA cycle can become a structured decision episode
 (observation, prior state, orientation, assumptions, options, decision, action,
@@ -788,7 +1082,7 @@ becomes **organizational experience**, not generic PM knowledge.
 
 ---
 
-## 20. Context, Memory, Policy, and Model Evolution
+## 18. Context, Memory, Policy, and Model Evolution
 
 | Layer | Example | Role |
 |---|---|---|
@@ -804,9 +1098,42 @@ The learning hierarchy is:
 Movement deeper into the system requires progressively stronger evidence.
 Individual experiences enter episodic memory first; repeated, validated patterns
 can become semantic knowledge or policy; only stable, generalizable skills
-become candidates for model adaptation. (Governance, explainability, and
-epistemic transparency — the original Sections 21–23 — are retained in Appendix
-G and continue to apply to both audiences.)
+become candidates for model adaptation. Learned policy is also what powers the
+loop's fast path from Orient straight to Act (§5). The deepest layer — adapting
+model weights — is a longer-range direction (see Future Directions).
+(Governance, explainability, and epistemic transparency — the original Sections
+21–23 — are retained in Appendix G and continue to apply to both audiences.)
+
+---
+
+## Future Directions
+
+These extensions follow naturally from the core architecture but are not needed
+to prove it. They are set aside here to keep the core — completion conditions,
+gaps, expectations, beliefs, and re-orientation — in focus.
+
+### Nested Project and Portfolio Executives
+
+The OODA model can be hierarchical: a Portfolio Executive orienting across
+multiple Project Executives. If Project A needs Sarah for another week and
+Project B depends on her for a critical milestone, neither Project Executive
+resolves the conflict alone — the Portfolio Executive orients across both and
+either allocates under delegated authority or prepares the decision for a human
+portfolio owner. This provides natural escalation across organizational levels.
+
+### Specialist Small Language Models
+
+The Executive can orchestrate narrow-domain SLMs — Schedule, Risk, Resource,
+Requirements, Financial, and Stakeholder — rather than relying on one model for
+every cognitive task. The Executive combines their outputs and maintains
+authority over the overall orientation.
+
+### Model Adaptation
+
+The final step of the learning hierarchy (§18) — turning stable, generalizable
+skills into model capability — requires the governance described in Appendix G:
+evidence-based, versioned, evaluated, and reversible change. It should follow,
+not precede, a working Context → Memory → Policy loop.
 
 ---
 
@@ -962,9 +1289,10 @@ being neglected by a team that naturally designs for the expert it understands.
 
 ## D. Core Design Principles
 
-1. **The Executive is proactive first: it reasons forward from goals and
-   anticipates what needs attention, rather than only reacting to events. The
-   absence of change is not the absence of management.**
+1. **The Executive is oriented toward completion. It continuously maintains
+   what "done" requires, identifies what is missing, and works to close those
+   gaps. Guarding against risk is one case of this, not its core. The absence of
+   change is not the absence of management.**
 2. Events trigger and accelerate attention; they do not necessarily prescribe
    action, and they are not the only reason the Executive thinks.
 3. State determines relevance; goals determine what constitutes work.
@@ -991,6 +1319,13 @@ being neglected by a team that naturally designs for the expert it understands.
 17. **For users who are not trained PMs, the product's job is to supply
     project-management competence — most of all foresight — not merely to assist
     it.** *(the non-PM principle)*
+18. **Done is a living, confirmed set of checkable outcomes** — suggested by the
+    system, confirmed by people, and revised as scope changes.
+19. **The model proposes; code writes.** All write-back is typed, validated,
+    previewed, attributable, and reversible.
+20. **Orientation is explicit and stable.** Beliefs carry confidence, evidence,
+    and a check date; they change only on new evidence, and every change records
+    why.
 
 ---
 
@@ -1037,9 +1372,9 @@ experience.
 
 Original open questions (still relevant to both audiences):
 
-- What is the minimum viable project-state ontology?
-- Which project objects should be explicit versus inferred dynamically?
-- How should significance and attention be scored?
+- Is the core ontology — completion conditions, gaps, expectations, and beliefs
+  — sufficient, and what else must be explicit rather than inferred?
+- How should significance and attention be scored beyond gap ranking (§6b)?
 - How should decision-relevance retrieval differ from conventional RAG?
 - How should the Executive distinguish facts, assumptions, predictions, and
   preferences?
@@ -1051,7 +1386,7 @@ Original open questions (still relevant to both audiences):
   training?
 - How should decision quality be distinguished from outcome quality?
 - What metrics establish that the Executive improves outcomes rather than merely
-  producing more activity?
+  producing more activity? (See Candidate Metrics below.)
 - What level of explanation is necessary for different classes of decisions?
 - How should privacy and access boundaries constrain an Executive that sees
   communication, documents, schedules, and financials?
@@ -1072,6 +1407,23 @@ New questions raised by the two-audience framing:
   can trust the system without auditing its reasoning?
 - How does the product move a user *along* the expertise spectrum over time —
   can it teach, so a non-PM gradually becomes more capable, if they wish?
+
+New questions raised by the completion-oriented framing:
+
+- How much general project-type knowledge should shape suggested completion
+  conditions before it becomes confidently wrong for a specific project?
+- What is the right cadence and trigger for revisiting "done"?
+- How should dismissed gaps be weighted for non-PM owners compared with trained
+  PMs?
+- What is the minimum write vocabulary that makes the planning conversation
+  useful?
+
+### Candidate Metrics
+
+- **Time to re-orient** — how long between a change in reality and the
+  Executive's beliefs reflecting it. This measures what OODA is actually for.
+- **Gaps closed before they blocked** — the share of gaps closed before they held
+  up a completion condition, compared with gaps discovered only after.
 
 ---
 
