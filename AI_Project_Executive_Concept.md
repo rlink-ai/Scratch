@@ -1509,5 +1509,53 @@ it as it does today.
 Write-back proposals (§10a) become mainly: create tasks or milestones, set owner
 and dates, link them to a condition, and add dependencies. All of this lives in
 the timeline domain, which already has its own service and is not tied to the
-meeting pipeline. Action items stay with meetings, which removes the open
-question of whether they can be created from the planning conversation.
+meeting pipeline. Action items stay with meetings as follow-ups. The schema
+already allows action items without a meeting (`action_item.id_meeting` is
+nullable and a `source` column records their origin), so the planning
+conversation could create them later if needed. Leaving them out of the first
+write vocabulary is a scoping choice, not a technical limit.
+
+### One surface for Focus and planning
+
+The Focus page (what needs attention) and the planning conversation (fixing it)
+should not be two modes the user switches between. If users have to know which
+mode they are in, the design is already too complicated. Instead there is **one
+surface with no modes**, where the Focus content *is* the planning agenda.
+
+**Layout — one screen, one list, one conversation:**
+
+- **Top: one health sentence**, expressed as distance to done ("On track for 2
+  of 3 outcomes; payouts at risk").
+- **Main area: a single "What needs you" list.** It merges the Focus feed and
+  the planning gaps (§6b). Each entry is something that needs attention: an
+  outcome with no tasks, a task with no owner, a blocked dependency, a risk.
+  There is one list, not a status view plus a planning view.
+- **Proposals appear inline under the entry they address.** When the planner
+  proposes tasks for an outcome that has none, they appear as proposed rows
+  directly beneath that entry, with "Add to plan". There is no separate draft
+  panel to keep track of.
+- **The conversation sits alongside, always available.** Selecting an entry
+  focuses the conversation on it ("This outcome has no tasks yet. Based on the
+  Sept 8 meeting, I'd suggest these three…"). The user can also simply type.
+- **"Everything else is on track"** remains as a quiet footer.
+
+**Why this works:**
+
+- Seeing a problem and fixing it happen in the same place, so the user never
+  switches context.
+- The list is built from the shared outcome and gap data, so what the page says
+  needs attention and what the planner works on cannot disagree.
+- For a non-PM, the conversation does the guiding: the planner's opening message
+  on any visit is the Focus summary itself ("Two things need you today. Want to
+  start with the payouts outcome?"). The page reads as one guided experience
+  rather than a dashboard plus a tool.
+
+**What changes in the implementation:**
+
+- The Focus page's separate LLM generation shrinks to the health sentence and
+  the causal chains. The list itself comes from the deterministic gap
+  calculation.
+- The draft lives as proposed rows inside the list instead of a separate panel.
+  The API is unchanged (draft, apply, undo); only the layout changes.
+- A separate "Plan this" hand-off is no longer needed, because selecting an
+  entry already scopes the conversation.
